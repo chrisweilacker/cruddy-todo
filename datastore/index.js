@@ -12,8 +12,8 @@ exports.create = (text, callback) => {
     if (err) {
       id = 0;
     }
-    console.log(exports.dataDir);
-    fs.writeFile(exports.dataDir + '/' + id, text, (err) => {
+    //console.log(exports.dataDir);
+    fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err) => {
       if (err) {
         throw ('error writing todo');
       } else {
@@ -25,10 +25,16 @@ exports.create = (text, callback) => {
 
 exports.readAll = (callback) => {
   var data = [];
-  _.each(items, (text, id) => {
-    data.push({ id, text });
+  fs.readdir(exports.dataDir,(err, files)=>{
+    if (err) {
+      callback(null, data);
+    }
+    files.forEach((file)=> {
+      var filePrefix = file.substring(0, 5);
+      data.push({id: filePrefix, text: filePrefix});
+    });
+    callback(null, data);
   });
-  callback(null, data);
 };
 
 exports.readOne = (id, callback) => {
