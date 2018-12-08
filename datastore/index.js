@@ -25,25 +25,33 @@ exports.create = (text, callback) => {
 
 exports.readAll = (callback) => {
   var data = [];
-  fs.readdir(exports.dataDir,(err, files)=>{
+  fs.readdir(exports.dataDir, (err, files)=>{
     if (err) {
       callback(null, data);
+    } else {
+      files.forEach((file) => {
+        var filePrefix = file.substring(0, 5);
+        data.push({id: filePrefix, text: filePrefix});
+      });
+      callback(null, data);
     }
-    files.forEach((file)=> {
-      var filePrefix = file.substring(0, 5);
-      data.push({id: filePrefix, text: filePrefix});
-    });
-    callback(null, data);
   });
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  // var text = items[id];
+  // if (!text) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback(null, { id, text });
+  // }
+  fs.readFile(exports.dataDir + '/' + id + '.txt', (err, fileData) => {
+    if (err) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      callback(null, {id: id, text: fileData.toString()});
+    }
+  });
 };
 
 exports.update = (id, text, callback) => {
