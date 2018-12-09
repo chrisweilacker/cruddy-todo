@@ -39,12 +39,6 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  // var text = items[id];
-  // if (!text) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback(null, { id, text });
-  // }
   fs.readFile(exports.dataDir + '/' + id + '.txt', (err, fileData) => {
     if (err) {
       callback(new Error(`No item with id: ${id}`));
@@ -55,13 +49,27 @@ exports.readOne = (id, callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  // var item = items[id];
+  // if (!item) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   items[id] = text;
+  //   callback(null, { id, text });
+  // }
+  var filePath = exports.dataDir + '/' + id + '.txt';
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      callback(err, {id, text});
+    } else {
+      fs.writeFile(filePath, text, (err) => {
+        if (err) {
+          throw ('error updating todo');
+        } else {
+          callback(null, {id, text});
+        }
+      });
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
