@@ -73,14 +73,28 @@ exports.update = (id, text, callback) => {
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if (!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
-  }
+  // var item = items[id];
+  // delete items[id];
+  // if (!item) {
+  //   // report an error if item not found
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback();
+  // }
+  var filePath = exports.dataDir + '/' + id + '.txt';
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      callback(err);
+    } else {
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          throw ('error deleting todo');
+        } else {
+          callback(null);
+        }
+      });
+    }
+  });
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
