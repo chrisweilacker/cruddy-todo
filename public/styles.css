@@ -6,3 +6,15 @@ body {
 .todo {
   padding: 3px;
 }
+
+.createdat{
+  font-style: italic;
+  font-size: 10px;
+  color: blue;
+}
+
+.updatedat{
+  font-style: italic;
+  font-size: 10px;
+  color: green;
+}

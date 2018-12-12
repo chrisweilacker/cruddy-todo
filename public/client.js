@@ -2,16 +2,29 @@ $(() => {
 
   // View ////////////////////////////////////////////////////////////////////////
 
-  var template = _.template(`
+  var templateCreated = _.template(`
     <li data-id="<%=id%>" class="todo">
       <span><%=text%></span>
       <button data-action="edit">edit</button>
       <button data-action="done">&#x2714;</button>
+      </br>
+      </span><span class="createdat">Created At: <%=createTime%>
+    </li>
+  `);
+
+  var templateUpdated = _.template(`
+    <li data-id="<%=id%>" class="todo">
+      <span><%=text%></span>
+      <button data-action="edit">edit</button>
+      <button data-action="done">&#x2714;</button>
+      </br>
+      <span class="updatedat">Updated At: <%=updateTime%></span> </br>
+      </span><span class="createdat">Created At: <%=createTime%>
     </li>
   `);
 
   var renderTodo = (todo) => {
-    return template(todo);
+    return todo.updateTime ? templateUpdated(todo) : templateCreated(todo);
   };
 
   var addTodo = (todo) => {

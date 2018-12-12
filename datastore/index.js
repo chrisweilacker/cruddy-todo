@@ -11,12 +11,13 @@ var items = {};
 exports.create = (text, callback) => {
   counter.getNextUniqueId()
     .then((id) =>{
-    //console.log(exports.dataDir);
-      fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err) => {
+      var todo = {text: text, id: id, createTime: Date()};
+      var todoString = JSON.stringify(todo);
+      fs.writeFile(exports.dataDir + '/' + id + '.txt', todoString, (err) => {
         if (err) {
           throw ('error writing todo');
         } else {
-          callback(null, {id, text});
+          callback(null, todo);
         }
       });
     })
@@ -33,16 +34,23 @@ exports.readAll = (callback) => {
       callback(null, data);
     } else {
       files.forEach((file) => {
-        var filePrefix = file.substring(0, 5);
-        var readFile = new Promise((resolve, reject) => {
-          fs.readFile(exports.dataDir + '/' + file, 'utf-8', (err, text) => {
-            if (err) {
-              reject(err);
-            }
-            resolve({id: filePrefix, text: text});
+        if (file[0] !== '.') {
+          var filePrefix = file.substring(0, 5);
+          console.log('FILE NAME IN READALL', file);
+          var readFile = new Promise((resolve, reject) => {
+            fs.readFile(exports.dataDir + '/' + file, 'utf-8', (err, todoString) => {
+              if (err) {
+                reject(err);
+              } else {
+                console.log('got to this string', todoString);
+                var todo = JSON.parse(todoString);
+                console.log('got to the object', todo);
+                resolve(todo);
+              }
+            });
           });
-        });
-        data.push(readFile);
+          data.push(readFile);
+        }
       });
       Promise.all(data).then((values)=> {
         callback(null, values);
@@ -52,48 +60,39 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  fs.readFile(exports.dataDir + '/' + id + '.txt', (err, fileData) => {
+  fs.readFile(exports.dataDir + '/' + id + '.txt', (err, todoString) => {
     if (err) {
       callback(new Error(`No item with id: ${id}`));
     } else {
-      callback(null, {id: id, text: fileData.toString()});
+      var todo = JSON.parse(todoString);
+      callback(null, todo);
     }
   });
 };
 
 exports.update = (id, text, callback) => {
-  // var item = items[id];
-  // if (!item) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   items[id] = text;
-  //   callback(null, { id, text });
-  // }
   var filePath = exports.dataDir + '/' + id + '.txt';
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
       callback(err, {id, text});
     } else {
-      fs.writeFile(filePath, text, (err) => {
-        if (err) {
-          throw ('error updating todo');
-        } else {
-          callback(null, {id, text});
-        }
+      var newTodo = {id: id, text: text, updateTime: Date()};
+      exports.readOne(id, (err, oldTodo) => {
+        newTodo.createTime = oldTodo.createTime;
+        var newTodoString = JSON.stringify(newTodo);
+        fs.writeFile(filePath, newTodoString, (err) => {
+          if (err) {
+            throw ('error updating todo');
+          } else {
+            callback(null, newTodo);
+          }
+        });
       });
     }
   });
 };
 
 exports.delete = (id, callback) => {
-  // var item = items[id];
-  // delete items[id];
-  // if (!item) {
-  //   // report an error if item not found
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback();
-  // }
   var filePath = exports.dataDir + '/' + id + '.txt';
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
