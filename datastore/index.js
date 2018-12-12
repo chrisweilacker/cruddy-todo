@@ -9,19 +9,21 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  counter.getNextUniqueId((err, id) =>{
-    if (err) {
-      id = 0;
-    }
+  counter.getNextUniqueId()
+    .then((id) =>{
     //console.log(exports.dataDir);
-    fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err) => {
-      if (err) {
-        throw ('error writing todo');
-      } else {
-        callback(null, {id, text});
-      }
+      fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err) => {
+        if (err) {
+          throw ('error writing todo');
+        } else {
+          callback(null, {id, text});
+        }
+      });
+    })
+    .catch((err)=>{
+      id = 0;
+      callback(err, null);
     });
-  });
 };
 
 exports.readAll = (callback) => {

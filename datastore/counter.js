@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const sprintf = require('sprintf-js').sprintf;
+const Promise = require('bluebird');
 
 var counter = 0;
 
@@ -15,49 +16,55 @@ const zeroPaddedNumber = (num) => {
   return sprintf('%05d', num);
 };
 
-const readCounter = (callback) => {
-  fs.readFile(exports.counterFile, (err, fileData) => {
-    if (err) {
-      callback(null, 0);
-    } else {
-      callback(null, Number(fileData));
-    }
+const readCounter = () => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(exports.counterFile, (err, fileData) => {
+      if (err) {
+        resolve(0);
+      } else {
+        resolve(Number(fileData));
+      }
+    });
+
   });
 };
 
-const writeCounter = (count, callback) => {
-  var counterString = zeroPaddedNumber(count);
-  fs.writeFile(exports.counterFile, counterString, (err) => {
-    if (err) {
-      throw ('error writing counter');
-    } else {
-      callback(null, counterString);
-    }
+const writeCounter = (count) => {
+  return new Promise((resolve, reject) => {
+    var counterString = zeroPaddedNumber(count);
+    fs.writeFile(exports.counterFile, counterString, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(counterString);
+      }
+    });
   });
+  
 };
 
 // Public API - Fix this function //////////////////////////////////////////////
 
-exports.getNextUniqueId = (callBack) => {
-  var returnString;
-  // call read counter and set to the counter
-  readCounter((err, count) => {
-    if (err) {
-      count = 0;
-    }
-    // increase counter by 1
-    count++;
-    // write counter
-    writeCounter(count, (err, counterString) => {
-      // return zero padded counter 
-      if (err) {
-        returnString = zeroPaddedNumber(0);
-      }
-      returnString = counterString;
-      callBack(null, returnString);
-    });
-  });
-  
+exports.getNextUniqueId = () => {
+  return new Promise((resolve, reject) => {
+    // call read counter and set to the counter
+    readCounter()
+      .then((count) => {
+        // increase counter by 1
+        count++;
+        // write counter
+        writeCounter(count)
+          .then((counterString) => {
+            resolve(counterString);
+          })
+          .catch(() => {
+            resolve(zeroPaddedNumber(0));
+          });       
+      })
+      .catch(() => {
+        resolve(zeroPaddedNumber(0));
+      });   
+  });   
 };
 
 
